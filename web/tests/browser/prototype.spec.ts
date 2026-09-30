@@ -43,7 +43,7 @@ test('denied camera permission is actionable and creates no messages', async ({ 
 test('mobile layout fits screen', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/?mode=local');
-  await expect(page.getByText('afternoon', { exact: true })).toBeVisible();
+  await expect(page.getByText('How are you? — класс afternoon', { exact: true })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
   await page.screenshot({ path: 'test-results/mobile.png', fullPage: true });
 });

@@ -25,3 +25,15 @@ server/.env
 data-local/
 web/public/dataset-examples/
 /test-results/
+
+.impeccable/review/
+.impeccable/config.local.json
+
+.agents/skills/impeccable/
+.claude/agents/impeccable-*.md
+.claude/skills/impeccable/
+.cursor/agents/impeccable-*.md
+.cursor/skills/impeccable/
+.cursor/hooks.json
+.codex/hooks.json
+.impeccable/

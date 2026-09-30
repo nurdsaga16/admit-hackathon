@@ -1,3 +1,4 @@
+import { getPhrase, phraseExplanation } from './phraseMapping';
 import { useEffect, useRef, useState } from 'react';
 import './examples.css';
 
@@ -7,7 +8,7 @@ type Catalog = {source:string;sha256:string;labels:string[];records:RecordInfo[]
 type Recording = {record:RecordInfo;frames:{index:number;blocks:(RecordedPoint[]|null)[]}[]};
 const handEdges = [[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[0,17],[17,18],[18,19],[19,20]];
 const poseEdges = [[0,1],[1,2],[2,3],[3,7],[0,4],[4,5],[5,6],[6,8],[9,10],[11,12],[11,13],[13,15],[12,14],[14,16],[15,17],[15,19],[15,21],[16,18],[16,20],[16,22]];
-export default function DatasetExamples() {
+export default function DatasetExamples({embedded=false}: {embedded?:boolean}) {
   const [catalog,setCatalog] = useState<Catalog|null>(null), [recording,setRecording] = useState<Recording|null>(null);
   const [label,setLabel] = useState(''), [recordId,setRecordId] = useState(0), [frame,setFrame] = useState(0), [block,setBlock] = useState(0);
   const [playing,setPlaying] = useState(false), [mirror,setMirror] = useState(false), [fps,setFps] = useState(15);
@@ -50,13 +51,23 @@ export default function DatasetExamples() {
     }
   },[recording,frame,block,mirror]);
   const current=recording?.frames[frame], points=current?.blocks[block];
-  return <main className="examples-page"><header><a className="brand" href="./">SignBridge</a><a href="?mode=local">Проверить на камере</a></header>
+  if(embedded) return <section className="embedded-examples">
+    <h2>Примеры движений</h2><p>Записанные точки датасета, не проверенная инструкция жестового языка.</p>
+    {error && <p role="alert" className="error">{error}</p>}
+    {!catalog && !error && <p role="status">Загрузка примеров…</p>}
+    {catalog && <><label>Выбери фразу<select aria-label="Фраза для примера" value={label} onChange={e=>{setLabel(e.target.value);setRecordId(catalog.records.find(r=>r.label===e.target.value)?.id??0);}}>{catalog.labels.map(l=><option key={l} value={l}>{getPhrase(l)} — класс {l}</option>)}</select></label><p>Покажи это движение, чтобы отправить фразу «{getPhrase(label)}».</p>
+    <canvas ref={canvas} width={640} height={640} aria-label="Записанные точки датасета"/>
+    {!recording && !error && <p role="status">Загрузка координат…</p>}
+    {recording && <><div className="example-buttons"><button onClick={()=>setPlaying(v=>!v)}>{playing?'Пауза':'Воспроизвести'}</button><button onClick={()=>{setPlaying(false);setFrame(0);}}>В начало</button></div><label>Кадр записи<input aria-label="Кадр записи" type="range" min={0} max={Math.max(0,recording.frames.length-1)} value={frame} onChange={e=>{setPlaying(false);setFrame(+e.target.value);}}/></label>{!points && <p>В этом кадре нет однозначного набора точек. Выбери другую запись или блок.</p>}</>}
+    <details><summary>Ориентация, запись и ограничения</summary><p>Зеркальность исходной съёмки, язык жестов и FPS не подтверждены. X направлен вправо, Y вниз. Пропорции кадра не восстановлены. Скорость просмотра условная: {fps} записанных кадров/с.</p><label><input type="checkbox" checked={mirror} onChange={e=>setMirror(e.target.checked)}/>Отразить отображение по горизонтали</label><p>{mirror?'Отражение включено: X = 1 − X базы.':'Без дополнительного отражения: X как в базе.'}</p><label>Запись<select aria-label="Запись" value={recordId} onChange={e=>setRecordId(+e.target.value)}>{catalog.records.filter(r=>r.label===label).map(r=><option key={r.id} value={r.id}>#{r.id} · {r.file}</option>)}</select></label>{recording && <label>Блок наблюдений<select value={block} onChange={e=>setBlock(+e.target.value)}>{Array.from({length:recording.record.blocks},(_,i)=><option value={i} key={i}>Блок {i+1}</option>)}</select></label>}<p>Исходные видео недоступны. Пропущенные точки не дорисовываются. Жёлтый — тело; зелёный — hand 0; сиреневый — hand 1. Эти номера не определяют анатомическую сторону.</p><a href={catalog.source} target="_blank" rel="noreferrer">Источник данных</a></details></>}
+  </section>;
+  return <main className={`examples-page${embedded ? ' embedded' : ''}`} >{!embedded && <header><a className="brand" href="./">SignBridge</a><a href="?mode=local">Проверить на камере</a></header>}
     <section className="intro"><p className="eyebrow">ЗАПИСАННЫЕ ДАННЫЕ</p><h1>Примеры движений</h1><p>Визуализация landmarks датасета. Это не полноценная инструкция по жестовому языку и не результат распознавания камеры.</p></section>
-    <section className="card"><p><strong>Ограничения записи:</strong> исходные видео недоступны по путям в базе. Язык жестов, зеркальность камеры, FPS и пропорции кадра не подтверждены. Сохранены 21 точка кисти и точки тела 0–22; ног и подробной мимики нет.</p><p>Повторные проходы разделены по порядку строк и окончанию набора точек тела. Номер блока не доказывает, что это оригинал или зеркальная версия. Не смешиваем блоки и не дорисовываем отсутствующие точки.</p></section>
+    <section className="card"><p>{phraseExplanation}</p><p><strong>Ограничения записи:</strong> исходные видео недоступны по путям в базе. Язык жестов, зеркальность камеры, FPS и пропорции кадра не подтверждены. Сохранены 21 точка кисти и точки тела 0–22; ног и подробной мимики нет.</p><p>Повторные проходы разделены по порядку строк и окончанию набора точек тела. Номер блока не доказывает, что это оригинал или зеркальная версия. Не смешиваем блоки и не дорисовываем отсутствующие точки.</p></section>
     {error && <p role="alert" className="error">{error}</p>}
     {!catalog && !error && <p role="status">Загрузка списка записей…</p>}
     {catalog && <div className="examples-grid"><section className="card">
-      <label>Слово<select aria-label="Слово" value={label} onChange={e=>{setLabel(e.target.value);setRecordId(catalog.records.find(r=>r.label===e.target.value)?.id??0);}}>{catalog.labels.map(l=><option key={l}>{l}</option>)}</select></label>
+      <label>Слово<select aria-label="Слово" value={label} onChange={e=>{setLabel(e.target.value);setRecordId(catalog.records.find(r=>r.label===e.target.value)?.id??0);}}>{catalog.labels.map(l=><option key={l} value={l}>{getPhrase(l)} — класс {l}</option>)}</select></label>
       <label>Запись<select aria-label="Запись" value={recordId} onChange={e=>setRecordId(+e.target.value)}>{catalog.records.filter(r=>r.label===label).map(r=><option key={r.id} value={r.id}>#{r.id} · {r.file}</option>)}</select></label>
       {recording && <><label>Блок наблюдений<select aria-label="Блок наблюдений" value={block} onChange={e=>setBlock(+e.target.value)}>{Array.from({length:recording.record.blocks},(_,i)=><option key={i} value={i}>Блок {i+1} по порядку id</option>)}</select></label>
       <p>Запись #{recording.record.id}: {recording.record.frames} кадров с точками. Длительность в базе: {recording.record.duration?.toFixed(2)??'не указана'} с. Это не подтверждает скорость воспроизведения.</p>
@@ -67,7 +78,7 @@ export default function DatasetExamples() {
       <p>Скорость условная. Кадры проигрываются по порядку без интерполяции; пропущенные исходные кадры не восстанавливаются.</p>
       <a href={catalog.source} target="_blank" rel="noreferrer">Источник: датасет Kaggle</a>
     </section><section className="card">
-      <h2>{label} · запись #{recordId}</h2><p>Нормированные XY: X → вправо, Y ↓ вниз, начало — слева сверху. Пропорции изображения не восстановлены. Z сохранён в файлах, на плоскости не отображается.</p>
+      <h2>{getPhrase(label)} — класс {label} · запись #{recordId}</h2><p>Покажи это движение, чтобы отправить фразу «{getPhrase(label)}».</p><p>Нормированные XY: X → вправо, Y ↓ вниз, начало — слева сверху. Пропорции изображения не восстановлены. Z сохранён в файлах, на плоскости не отображается.</p>
       <canvas ref={canvas} width={640} height={640} aria-label="Записанные точки датасета"/>
       {!recording && !error && <p role="status">Загрузка координат…</p>}
       {recording && <><div className="example-buttons"><button disabled={!recording.frames.length} onClick={()=>setPlaying(v=>!v)}>{playing?'Пауза':'Воспроизвести'}</button><button onClick={()=>{setPlaying(false);setFrame(0);}}>В начало</button></div>

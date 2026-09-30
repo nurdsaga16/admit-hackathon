@@ -25,11 +25,13 @@ async function enterPair(baseURL: string, speechFixture = false) {
     (window as any).SpeechRecognition = SyntheticSpeech;
   });
   await a.goto(baseURL); await a.getByLabel('Твоё имя').fill('Alice');
-  await a.getByRole('button', { name: 'Создать комнату' }).click();
+  await a.getByRole('button', { name: 'Начать звонок', exact:true }).last().click();
   await expect(a.getByText('Ждём собеседника', { exact: true })).toBeVisible();
+  await a.getByRole('button',{name:'Пригласить',exact:true}).click();
   const link = await a.getByLabel('Ссылка комнаты').inputValue();
+  await a.getByRole('button',{name:'Закрыть',exact:true}).click();
   await b.goto(link); await b.getByLabel('Твоё имя').fill('Bob');
-  await b.getByRole('button', { name: 'Подключиться', exact: true }).click();
+  await b.getByRole('button', { name: 'Присоединиться к звонку', exact: true }).click();
   await expect(a.getByRole('status').filter({ hasText: 'Соединение установлено' })).toBeVisible({ timeout: 35000 });
   await expect(b.getByRole('status').filter({ hasText: 'Соединение установлено' })).toBeVisible({ timeout: 35000 });
   return { browser, a, b, link };
@@ -63,15 +65,19 @@ test('two clients: real WebRTC video/audio, messages, synthetic speech events, o
     expect(await a.evaluate(() => (window as any).__streams[0].getVideoTracks()[0].readyState)).toBe('ended');
     await a.getByRole('button', { name: 'Включить камеру', exact: true }).click();
     await expect(a.getByRole('button', { name: 'Выключить камеру', exact: true })).toBeEnabled();
-    await a.getByLabel('Написать или исправить сообщение').fill('Synthetic transport check');
+    await a.getByRole('button',{name:'Написать сообщение',exact:true}).click();
+    await a.getByLabel('Написать или исправить сообщение').fill('afternoon');
     await a.getByRole('button', { name: 'Отправить текст' }).click();
+    await a.getByRole('button',{name:'Закрыть',exact:true}).click();
     await expect(b.locator('.conversation li')).toHaveCount(1);
     await expect(b.locator('.conversation li')).toContainText('Alice');
     await expect(a.locator('.conversation li')).toContainText('Доставлено');
-    await b.getByRole('button', { name: 'Включить субтитры', exact: true }).click();
+    for (const page of [a,b]) await expect(page.locator('.conversation li p')).toHaveText('afternoon');
+    await b.getByRole('button',{name:'Голосом',exact:true}).click();
+    await b.getByRole('button', { name: 'Начать говорить с субтитрами', exact: true }).click();
     await expect(b.getByLabel('Видео собеседника', { exact: true })).toHaveJSProperty('muted', true);
     const emit = (final: boolean) => b.evaluate(final => {
-      (window as any).__speechFixture.onresult({ resultIndex: 0, results: [{ isFinal: final, 0: { transcript: final ? 'Synthetic final caption' : 'Synthetic interim' } }] });
+      (window as any).__speechFixture.onresult({ resultIndex: 0, results: [{ isFinal: final, 0: { transcript: final ? 'person' : 'Synthetic interim' } }] });
     }, final);
     await emit(false);
     await expect(a.locator('.subtitles')).toContainText('Synthetic interim');
@@ -79,14 +85,15 @@ test('two clients: real WebRTC video/audio, messages, synthetic speech events, o
     await emit(true); await emit(true);
     await expect(a.locator('.conversation li')).toHaveCount(2);
     await expect(b.locator('.conversation li')).toHaveCount(2);
-    await expect(a.locator('.subtitles')).toContainText('Synthetic final caption');
+    await expect(a.locator('.subtitles p')).toHaveText('person');
+    for (const page of [a,b]) await expect(page.locator('.conversation li p')).toHaveText(['afternoon','person']);
     await b.getByRole('button', { name: 'Остановить субтитры', exact: true }).click();
     await expect(b.getByLabel('Видео собеседника', { exact: true })).toHaveJSProperty('muted', false);
     await a.getByRole('button', { name: 'Включить жесты', exact: true }).click();
     await expect(a.getByRole('status').filter({ hasText: 'Руки не видны' })).toBeVisible({ timeout: 30000 });
-    await expect(a.getByRole('button', { name: 'Подтвердить и отправить' })).toBeDisabled();
+    await expect(a.getByRole('button', { name: 'Отправить',exact:true })).toBeDisabled();
     const c = await browser.newPage(); await observeMedia(c); await c.goto(link);
-    await c.getByRole('button', { name: 'Подключиться', exact: true }).click();
+    await c.getByRole('button', { name: 'Присоединиться к звонку', exact: true }).click();
     await expect(c.getByRole('status').filter({ hasText: 'Комната занята' })).toBeVisible();
     expect(await c.evaluate(() => (window as any).__streams.every((s: MediaStream) => s.getTracks().every(t => t.readyState === 'ended')))).toBe(true);
     await a.screenshot({ path: 'test-results/call-desktop.png', fullPage: true });
@@ -132,7 +139,7 @@ test('peer tab closes: remaining client ends and releases media', async ({ baseU
 });
 test('call permission denied and missing speech support have clear states', async ({ page, baseURL }) => {
   await page.addInitScript(() => { navigator.mediaDevices.getUserMedia = async () => { throw new DOMException('denied', 'NotAllowedError'); }; });
-  await page.goto(baseURL!); await page.getByRole('button', { name: 'Создать комнату' }).click();
+  await page.goto(baseURL!); await page.getByRole('button', { name: 'Начать звонок', exact:true }).last().click();
   await expect(page.getByRole('status').filter({ hasText: 'Доступ к камере закрыт' })).toBeVisible();
   const browser = await chromium.launch({ args: ['--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream'] });
   try {
@@ -145,9 +152,10 @@ test('call permission denied and missing speech support have clear states', asyn
         return get(constraints);
       };
     });
-    await other.goto(baseURL!); await other.getByRole('button', { name: 'Создать комнату' }).click();
+    await other.goto(baseURL!); await other.getByRole('button', { name: 'Начать звонок', exact:true }).last().click();
+    await other.getByRole('button',{name:'Голосом',exact:true}).click();
     await expect(other.getByRole('status').filter({ hasText: 'Распознавание речи недоступно' })).toBeVisible();
-    await expect(other.getByRole('button', { name: 'Включить субтитры', exact: true })).toBeDisabled();
+    await expect(other.getByRole('button', { name: 'Начать говорить с субтитрами', exact: true })).toBeDisabled();
     await expect(other.getByRole('button', { name: 'Включить микрофон', exact: true })).toBeEnabled();
     await other.getByRole('button', { name: 'Включить микрофон', exact: true }).click();
     await expect(other.getByRole('alert')).toContainText('Микрофон недоступен');

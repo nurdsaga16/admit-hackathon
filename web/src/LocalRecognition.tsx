@@ -1,3 +1,4 @@
+import { getPhrase, phraseExplanation } from './phraseMapping';
 import { useEffect, useRef, useState } from 'react';
 import { defaults, Sequence, Stability, visibilityHint, type Metadata, type Settings } from './core';
 import { GestureModel } from './model';
@@ -126,7 +127,7 @@ export default function LocalRecognition() {
   }
   return <main>
     <header><a className="brand" href="./"><span className="mark">S</span>SignBridge</a><span className="badge">Браузерный прототип · 01</span></header>
-    <section className="intro"><p className="eyebrow">УВИДЕТЬ. ПОНЯТЬ. ОТВЕТИТЬ.</p><h1>Твои движения.<br/><span>Слова на экране.</span></h1><p>Проверяем распознавание 11 слов исходной модели. Камера и обработка работают на твоём устройстве.</p></section>
+    <section className="intro"><p className="eyebrow">УВИДЕТЬ. ПОНЯТЬ. ОТВЕТИТЬ.</p><h1>Твои движения.<br/><span>Слова на экране.</span></h1><p>{phraseExplanation}. Камера и обработка работают на твоём устройстве.</p></section>
     <div className="workspace">
       <section className="camera-panel" aria-label="Камера и распознавание">
         <div className="panel-heading"><h2>Твоя камера</h2><span className="status">{active ? '● Включена' : busy ? '◌ Подготовка' : '○ Выключена'}</span></div>
@@ -136,11 +137,11 @@ export default function LocalRecognition() {
         {error && <p className="error" role="alert">{error}</p>}
       </section>
       <aside className="results">
-        <section className="card"><p className="eyebrow">ТЕКУЩАЯ ФРАЗА · ЧЕРНОВИК</p><h2 className="phrase">{draft ?? 'Жду движение…'}</h2><p>Слово попадёт в историю только после твоего подтверждения.</p><button className="primary" disabled={!draft} onClick={confirm}>Подтвердить слово</button><div className="ranking"><h3>Предположение модели</h3>{scores.length ? scores.map((s, i) => <div className="rank" key={s.word}><span>{i + 1}. {s.word}</span><strong>{(s.value * 100).toFixed(1)}%</strong></div>) : <p>Результаты появятся после накопления кадров.</p>}</div><small>Оценка модели не равна вероятности правильного перевода. Высокая оценка возможна и у незнакомого жеста.</small></section>
-        <section className="card"><div className="panel-heading"><h2>История</h2><button className="text-button" onClick={() => { setHistory([]); setDraft(null); gate.current.clearCandidate(); runRef.current?.sequence?.reset(); setScores([]); setProgress(0); }}>Очистить</button></div>{history.length ? <ol className="history">{history.map((m, i) => <li key={i}><span>{m.word}</span><time>{m.time}</time></li>)}</ol> : <p>Здесь будут подтверждённые сообщения.</p>}<small>Только в этой вкладке. Видео не записывается.</small></section>
+        <section className="card"><p className="eyebrow">ТЕКУЩАЯ ФРАЗА · ЧЕРНОВИК</p><h2 className="phrase">{draft ? getPhrase(draft) : 'Жду движение…'}</h2><p>Слово попадёт в историю только после твоего подтверждения.</p><button className="primary" disabled={!draft} onClick={confirm}>Подтвердить слово</button><div className="ranking"><h3>Предположение модели</h3>{scores.length ? scores.map((s, i) => <div className="rank" key={s.word}><span>{i + 1}. {getPhrase(s.word)} — класс {s.word}</span><strong>{(s.value * 100).toFixed(1)}%</strong></div>) : <p>Результаты появятся после накопления кадров.</p>}</div><small>Проценты — оценка исходного класса, не вероятность правильного перевода. Высокая оценка возможна и у незнакомого жеста.</small></section>
+        <section className="card"><div className="panel-heading"><h2>История</h2><button className="text-button" onClick={() => { setHistory([]); setDraft(null); gate.current.clearCandidate(); runRef.current?.sequence?.reset(); setScores([]); setProgress(0); }}>Очистить</button></div>{history.length ? <ol className="history">{history.map((m, i) => <li key={i}><span>{getPhrase(m.word)}</span><time>{m.time}</time></li>)}</ol> : <p>Здесь будут подтверждённые сообщения.</p>}<small>Только в этой вкладке. Видео не записывается.</small></section>
       </aside>
     </div>
-    <section className="card vocabulary"><h2>Словарь модели</h2><div className="words">{labels.map(word => <span key={word}>{word}</span>)}</div><p>Это названия классов, а не инструкция по выполнению жестов. Жестовый язык и эталонные движения ещё требуют проверки. Hello, How are you? и I’m fine пока не поддерживаются.</p></section>
+    <section className="card vocabulary"><h2>Словарь модели</h2><div className="words">{labels.map(word => <span key={word}>{getPhrase(word)} — класс {word}</span>)}</div><p>Фразы назначены существующим движениям. Модель не обучалась настоящим жестам этих фраз; записи датасета не являются проверенной инструкцией жестового языка.</p></section>
     <details className="card"><summary>Настройки принятия результата</summary><div className="settings"><label>Порог оценки: {Math.round(settings.threshold * 100)}%<input type="range" min="0.5" max="0.99" step="0.01" value={settings.threshold} onChange={e => changeSettings({ ...settings, threshold: +e.target.value })}/></label><label>Отрыв от второго: {Math.round(settings.margin * 100)}%<input type="range" min="0.05" max="0.5" step="0.01" value={settings.margin} onChange={e => changeSettings({ ...settings, margin: +e.target.value })}/></label><label>Устойчивых окон: {settings.stableWindows}<input type="range" min="2" max="6" step="1" value={settings.stableWindows} onChange={e => changeSettings({ ...settings, stableWindows: +e.target.value })}/></label></div><p>Начальные пороги экспериментальные. Соседние окна перекрываются; устойчивость не доказывает правильность жеста.</p></details>
     <footer>SignBridge · ограниченный словарь, открытый прототип</footer>
   </main>;

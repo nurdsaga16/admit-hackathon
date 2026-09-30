@@ -1,3 +1,4 @@
+import { phraseExplanation } from './phraseMapping';
 import { useState } from 'react';
 import LocalRecognition from './LocalRecognition';
 import CallPage from './CallPage';
@@ -8,10 +9,12 @@ export default function App() {
   const [call, setCall] = useState<{ roomId: string; name: string } | null>(null);
   const [name, setName] = useState('');
   const [link, setLink] = useState(params.get('room') ?? '');
+  const [replyMode, setReplyMode] = useState<'gesture'|'voice'>('gesture');
+  const [joining, setJoining] = useState(params.has('room'));
   const [busy, setBusy] = useState(false), [error, setError] = useState('');
   if (params.get('mode') === 'local') return <LocalRecognition/>;
   if (params.get('mode') === 'examples') return <DatasetExamples/>;
-  if (call) return <CallPage roomId={call.roomId} name={call.name} onHome={() => { history.replaceState(null, '', location.pathname); setCall(null); setLink(''); }}/ >;
+  if (call) return <CallPage roomId={call.roomId} name={call.name} initialReplyMode={replyMode} onHome={() => { history.replaceState(null, '', location.pathname); setCall(null); setLink(''); }}/ >;
   function enter(roomId: string) {
     if (!/^[a-f0-9]{32}$/.test(roomId)) { setError('Вставь полную ссылку комнаты или её код.'); return; }
     const url = new URL(location.href); url.search = ''; url.searchParams.set('room', roomId);
@@ -33,16 +36,24 @@ export default function App() {
     try { roomId = new URL(roomId).searchParams.get('room') ?? ''; } catch { /* A bare room id is accepted. */ }
     enter(roomId);
   }
+  const invited = params.has('room') && !!link;
   return <main className="home">
-    <header><a className="brand" href="./"><span className="mark">S</span>SignBridge</a><a className="quiet-link" href="?mode=local">Проверить распознавание</a></header>
-    <section className="intro"><p className="eyebrow">РАЗГОВОР, КОТОРЫЙ ВИДНО</p><h1>На связи.<br/><span>На одном экране.</span></h1><p>Видеозвонок на двоих: подтверждённые жесты становятся сообщениями, английская речь — субтитрами.</p></section>
-    <div className="home-grid"><section className="card"><h2>{params.has('room') ? 'Тебя пригласили в разговор' : 'Начать разговор'}</h2>
-      <label className="field">Твоё имя<input maxLength={40} value={name} onChange={e => setName(e.target.value)} placeholder="Как тебя представить" autoComplete="given-name"/></label>
-      <button className="primary" disabled={busy} onClick={() => void create()}>{busy ? 'Создаём комнату…' : 'Создать комнату'}</button>
-      <div className="join-section"><label className="field">Ссылка или код комнаты<input value={link} onChange={e => setLink(e.target.value)} placeholder="Вставь ссылку от собеседника"/></label><button disabled={busy || !link.trim()} onClick={join}>Подключиться</button></div>
+    <header><a className="brand" href="./">SignBridge</a><a href="?mode=examples">Посмотреть движения</a></header>
+    <div className="welcome-layout"><section className="welcome-copy">
+      <h1>Разговор, который видно.</h1>
+      <p className="welcome-lead">Видеозвонок на двоих: отвечай движениями, голосом или текстом.</p>
+      <div className="conversation-example" aria-label="Пример общения, не распознавание"><span>Например</span><p>Покажи заданное движение <strong>Hello</strong></p><p>Ответь голосом на английском <strong>Nice to meet you</strong></p><small>Оба увидят сообщения рядом с видео.</small></div>
+      <p className="honest-note">{phraseExplanation}.</p>
+    </section><section className="entry-form" aria-label="Вход в разговор">
+      {invited ? <><h2>Тебя пригласили в звонок</h2><p>Комната <strong>{link.slice(0,8)}</strong>. Подключись, когда будешь готов.</p></> : <><h2>Давай начнём</h2><div className="segmented"><button aria-pressed={!joining} onClick={()=>setJoining(false)}>Начать звонок</button><button aria-pressed={joining} onClick={()=>setJoining(true)}>Присоединиться</button></div></>}
+      <label className="field">Твоё имя <span>(необязательно)</span><input maxLength={40} value={name} onChange={e=>setName(e.target.value)} placeholder="Как тебя представить" autoComplete="given-name"/></label>
+      <fieldset className="reply-choice"><legend>Как удобнее отвечать?</legend><div className="segmented"><button aria-pressed={replyMode==='gesture'} onClick={()=>setReplyMode('gesture')}>Жестами</button><button aria-pressed={replyMode==='voice'} onClick={()=>setReplyMode('voice')}>Голосом</button></div><small>Можно менять во время звонка. Текст доступен всегда.</small></fieldset>
+      {joining && !invited && <label className="field">Ссылка или код комнаты<input value={link} onChange={e=>setLink(e.target.value)} placeholder="Вставь приглашение"/></label>}
+      <p className="permission-note">При входе браузер попросит камеру, чтобы вы видели друг друга. Микрофон включается только по твоему действию.</p>
+      <button className="primary entry-submit" disabled={busy || (joining && !link.trim())} onClick={()=>joining ? join() : void create()}>{busy?'Создаём звонок…':joining?'Присоединиться к звонку':'Начать звонок'}</button>
       {error && <p className="error" role="alert">{error}</p>}
-      <p>Камера запрашивается при входе. Микрофон и распознавание речи включаются отдельно.</p>
-    </section><section className="home-notes"><h2>Один разговор — два способа ответить</h2><ol><li>Создай комнату и отправь ссылку собеседнику.</li><li>Покажи поддерживаемый жест, проверь слово и подтверди отправку.</li><li>Включи микрофон и английские субтитры, чтобы ответить голосом.</li></ol><p>Прототип знает 11 классов исходной модели. Hello, How are you? и I’m fine ещё не обучены.</p><p>Видео и история не записываются на сервер. Распознавание речи может передавать звук сервису браузера.</p></section></div>
-    <footer><a href="?mode=examples">Примеры движений из датасета</a><p>SignBridge · разговор без установки приложения</p></footer>
+      <small>Без регистрации. Видео и история не записываются на сервер.</small>
+    </section></div>
+    <footer><a href="?mode=local">Проверить распознавание на своей камере</a></footer>
   </main>;
 }
