@@ -100,6 +100,9 @@ test('two clients: real WebRTC video/audio, messages, synthetic speech events, o
     await a.getByRole('button', { name: 'Завершить звонок' }).click();
     for (const page of [a, b]) {
       await expect(page.getByRole('heading', { name: 'История разговора' })).toBeVisible();
+      await page.getByText('Диагностика соединения', { exact: true }).click();
+      await expect(page.getByLabel('Журнал соединения')).toHaveValue(/ICE config от сервера: STUN \d+, TURN \d+/);
+      await expect(page.getByLabel('Журнал соединения')).toHaveValue(/Освобождение ресурсов звонка/);
       await expect(page.locator('.conversation li')).toHaveCount(2);
       expect(await page.evaluate(() => (window as any).__streams.every((s: MediaStream) => s.getTracks().every(t => t.readyState === 'ended')))).toBe(true);
       expect(await page.evaluate(() => (window as any).__pcs.every((pc: RTCPeerConnection) => pc.connectionState === 'closed'))).toBe(true);

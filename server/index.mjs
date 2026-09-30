@@ -1,4 +1,5 @@
 import http from 'node:http';
+import { loadServerEnvironment } from './environment.mjs';
 import https from 'node:https';
 import { readFileSync, createReadStream } from 'node:fs';
 import { stat } from 'node:fs/promises';
@@ -10,8 +11,11 @@ import { WebSocketServer, WebSocket } from 'ws';
 const list = value => (value ?? '').split(',').map(s => s.trim()).filter(Boolean);
 export function iceConfig(env, id) {
   const iceServers = [];
+  if(env.ICE_TRANSPORT_POLICY && !['all','relay'].includes(env.ICE_TRANSPORT_POLICY)) throw new Error('ICE_TRANSPORT_POLICY must be all or relay');
   const stun = list(env.STUN_URLS ?? 'stun:stun.l.google.com:19302');
   const turn = list(env.TURN_URLS);
+  if (stun.some(url => !/^stuns?:\S+$/i.test(url))) throw new Error('STUN_URLS requires stun: or stuns: endpoints');
+  if (turn.some(url => !/^turns?:\S+$/i.test(url))) throw new Error('TURN_URLS requires turn: or turns: endpoints, not an HTTPS tunnel');
   if (stun.length) iceServers.push({ urls: stun });
   if (turn.length) {
     if (!env.TURN_SHARED_SECRET) throw new Error('TURN_URLS requires TURN_SHARED_SECRET');
@@ -117,6 +121,12 @@ export function createSignalingServer(env = process.env) {
   return { server, rooms, wss };
 }
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  const loaded = loadServerEnvironment();
+  const config = iceConfig(process.env, 'startup');
+  const urls = config.iceServers.flatMap(server => server.urls);
+  const stun = urls.filter(url => /^stuns?:/i.test(url)).length, turn = urls.filter(url => /^turns?:/i.test(url)).length;
+  console.log(`ICE: server/.env ${loaded ? 'loaded' : 'absent (process environment/defaults)'}; STUN ${stun}, TURN ${turn}, policy ${config.iceTransportPolicy}`);
+  if(!turn)console.warn('TURN is not configured. HTTPS/WebSocket tunnels do not provide a WebRTC relay. Cross-network calls may fail.');
   const { server } = createSignalingServer();
   server.listen(Number(process.env.PORT) || 3001, process.env.HOST || '127.0.0.1', () => {
     console.log(`SignBridge: ${process.env.TLS_CERT_FILE ? 'https' : 'http'}://${process.env.HOST || '127.0.0.1'}:${process.env.PORT || 3001}`);

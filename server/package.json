@@ -4,7 +4,7 @@
   "version": "0.2.0",
   "type": "module",
   "scripts": {
-    "start": "node --env-file-if-exists=.env index.mjs",
+    "start": "node index.mjs",
     "test": "node --test test/*.test.mjs"
   },
   "dependencies": {

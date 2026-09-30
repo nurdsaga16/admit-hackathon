@@ -46,3 +46,11 @@ test('TURN REST credentials are temporary; shared secret never reaches client', 
   assert.ok(!JSON.stringify(config).includes('test-only-secret'));
   assert.throws(() => iceConfig({ ICE_TRANSPORT_POLICY: 'relay' }, 'x'));
 });
+
+test('ICE defaults distinguish missing and explicitly empty STUN; relay needs real TURN',()=>{
+ assert.deepEqual(iceConfig({},'x'),{iceServers:[{urls:['stun:stun.l.google.com:19302']}],iceTransportPolicy:'all'});
+ assert.deepEqual(iceConfig({STUN_URLS:''},'x').iceServers,[]);
+ assert.throws(()=>iceConfig({TURN_URLS:'turn:relay.test'},'x'),/TURN_SHARED_SECRET/);
+ assert.throws(()=>iceConfig({ICE_TRANSPORT_POLICY:'relai'},'x'),/all or relay/);
+ assert.throws(()=>iceConfig({TURN_URLS:'https://tunnel.example',TURN_SHARED_SECRET:'test-only'},'x'),/not an HTTPS tunnel/);
+});
