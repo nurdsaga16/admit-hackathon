@@ -1,211 +1,193 @@
 ---
 name: SignBridge
-description: Visible conversation with a quiet video stage and one next action.
+description: Approved dark video conversation interface from SignBridge.dc.html.
 colors:
-  ink: '#17273b'
-  muted: '#516176'
-  accent: '#2855cf'
-  accent-hover: '#1e43a9'
-  line: '#ccd5e0'
-  page: '#f4f6f4'
-  surface: '#ffffff'
-  drawer: '#f7f9fc'
-  stage: '#172432'
-  control-hover: '#e4eafa'
-  segmented: '#e5eaf2'
-  disabled-text: '#64748a'
-  disabled-surface: '#e6ebf2'
-  danger-text: '#912e26'
-  danger-surface: '#fff0ee'
-  danger-line: '#ebbbb7'
+  page: '#0d1719'
+  outer: '#081012'
+  surface: '#122024'
+  feedback: '#132326'
+  stage: '#101c1f'
+  field: '#0a1315'
+  message: '#1e3439'
+  text: '#eaf3f1'
+  secondary: '#c3d3d1'
+  muted: '#b3c6c3'
+  placeholder: '#8fa6a3'
+  accent: '#5ee6c4'
+  accent-hover: '#83f0d5'
+  accent-ink: '#04241c'
+  warning: '#f4c26b'
+  error: '#ff8a8a'
+  danger: '#e5484d'
+  danger-hover: '#f05a5f'
+  white: '#ffffff'
+  line: 'rgba(220,240,235,.08)'
+  control-line: 'rgba(220,240,235,.3)'
 typography:
   display:
-    fontFamily: '"Segoe UI", Arial, sans-serif'
-    fontSize: 3.25rem
-    fontWeight: 650
-    lineHeight: 1.08
-    letterSpacing: -.035em
-  headline:
-    fontFamily: '"Segoe UI", Arial, sans-serif'
-    fontSize: 1.375rem
+    fontFamily: 'Onest, system-ui, sans-serif'
+    fontSize: 72px
     fontWeight: 700
-    lineHeight: 1.25
-  draft:
-    fontFamily: '"Segoe UI", Arial, sans-serif'
-    fontSize: 2.25rem
-    fontWeight: 650
-    lineHeight: 1.12
-  body:
-    fontFamily: '"Segoe UI", Arial, sans-serif'
-    fontSize: 1rem
-    fontWeight: 400
-    lineHeight: 1.45
-  label:
-    fontFamily: '"Segoe UI", Arial, sans-serif'
-    fontSize: .8125rem
-  button:
-    fontFamily: '"Segoe UI", Arial, sans-serif'
-    fontSize: .9375rem
+    lineHeight: 1.03
+    letterSpacing: '-.03em'
+  headline:
+    fontFamily: 'Onest, system-ui, sans-serif'
+    fontSize: 40px
+    fontWeight: 700
+    letterSpacing: '-.02em'
+  phrase:
+    fontFamily: 'Onest, system-ui, sans-serif'
+    fontSize: 25px
     fontWeight: 600
-    lineHeight: 1.3
+    lineHeight: 1.15
+  body:
+    fontFamily: 'Onest, system-ui, sans-serif'
+    fontSize: 16px
+    lineHeight: 1.5
+  button:
+    fontFamily: 'Onest, system-ui, sans-serif'
+    fontSize: 16px
+    fontWeight: 600
+  room-link:
+    fontFamily: 'JetBrains Mono, monospace'
+    fontSize: 14px
 rounded:
-  field: 8px
-  button: 10px
-  segment: 12px
-  stage: 14px
-  sheet: 16px
+  small: 8px
+  compact: 10px
+  control: 12px
+  message: 14px
+  feedback: 16px
+  stage: 18px
+  dialog: 20px
 spacing:
   xs: 4px
   sm: 8px
-  control: 12px
+  tight: 10px
+  gap: 12px
+  gutter: 14px
   md: 16px
   lg: 24px
-  page: 32px
+  section: 40px
 components:
   button-primary:
     backgroundColor: '{colors.accent}'
-    textColor: '{colors.surface}'
-    rounded: '{rounded.button}'
+    textColor: '{colors.accent-ink}'
+    rounded: '{rounded.control}'
     typography: '{typography.button}'
-    padding: 9px 14px
+    padding: 0 16px
   button-primary-hover:
     backgroundColor: '{colors.accent-hover}'
-  button-secondary:
-    backgroundColor: '{colors.surface}'
-    textColor: '{colors.ink}'
-    rounded: '{rounded.button}'
-    padding: 9px 14px
   button-danger:
-    backgroundColor: '{colors.danger-surface}'
-    textColor: '{colors.danger-text}'
-    rounded: '{rounded.button}'
-    padding: 9px 14px
+    backgroundColor: '{colors.danger}'
+    textColor: '{colors.white}'
+    rounded: '{rounded.control}'
   field:
-    backgroundColor: '{colors.surface}'
-    textColor: '{colors.ink}'
-    rounded: '{rounded.field}'
-    padding: 12px
-  reply-selector:
-    backgroundColor: '{colors.segmented}'
-    rounded: '{rounded.segment}'
-    padding: 4px
+    backgroundColor: '{colors.field}'
+    textColor: '{colors.text}'
+    rounded: '{rounded.control}'
+    padding: 12px 14px
   video-stage:
     backgroundColor: '{colors.stage}'
     rounded: '{rounded.stage}'
-  drawer:
-    backgroundColor: '{colors.drawer}'
-    padding: 24px
+  feedback:
+    backgroundColor: '{colors.feedback}'
+    rounded: '{rounded.feedback}'
+    padding: 12px 16px 14px
+  chat:
+    backgroundColor: '{colors.surface}'
+    rounded: '{rounded.stage}'
 ---
 
 # Design System: SignBridge
 
 ## Overview
 
-**Creative North Star: "Conversation console"**
+The approved visual authority is [SignBridge.dc.html](design-reference/SignBridge.dc.html). This document records the implemented dark interface; it replaces the previous light, cobalt system. No new creative metaphor is introduced beyond the supplied design.
 
-The conversation console keeps the other person visible and the next response easy to find. Ink text, cobalt actions, thin borders and a dark video stage support a quiet Russian interface with prominent English phrases.
-
-This records the implemented lobby and active call, including their drawers and embedded movement examples. Local diagnostics, the standalone examples page and the ended-call history retain the earlier green system; they are not evidence for extending the new palette. The shared page background still comes from style.css.
+Deep green backgrounds, mint actions, rounded video and chat surfaces, and Onest typography tie the landing page and conversation together. The supplied logo is copied to `web/public/assets/signbridge-logo.png`; its crop follows the export. The landing page includes an illustrative conversation. Active calls use actual media streams and actual conversation state.
 
 **Key Characteristics:**
 
-- Video and phrases carry the visual emphasis.
-- One saved draft stays distinct from a tentative prediction.
-- Supporting details open on demand.
-- No shipped decorative raster assets or downloaded fonts.
+- Mint actions and saved phrases stand out against dark surfaces.
+- Status includes text and icons alongside color.
+- Tentative predictions, saved drafts and sent messages remain distinct.
+- Technical details remain available through help and diagnostics.
 
 ## Colors
 
-Cobalt identifies conversation actions; quiet neutral surfaces keep video and language dominant. Frontmatter contains the normative values.
-
 ### Primary
 
-- **Cobalt action** (`accent`): primary actions, progress and focus; `accent-hover` darkens the enabled action.
+**Mint action** (`accent`, `accent-hover`, `accent-ink`) identifies primary actions, focus, connected state and confirmed drafts.
 
 ### Secondary
 
-- **Warm danger** (`danger-text`, `danger-surface`, `danger-line`): the labelled end-call action and its confirmation.
+**Amber** (`warning`) marks waiting and uncertainty. **Soft red** (`error`) marks guidance requiring attention. **Red action** (`danger`, `danger-hover`) identifies ending the call.
 
 ### Neutral
 
-- **Ink / muted**: main text and secondary instructions.
-- **Page / surface / drawer**: inherited page ground, white controls and pale modal panels.
-- **Stage**: letterboxing around live video, separate from page surfaces.
-- **Line / segmented / control-hover**: separators, reply-selector tray and enabled hover.
-- **Disabled text / disabled surface**: readable unavailable controls, with explicit disabled semantics.
+**Page / outer** form the dark ground. **Surface / feedback / stage** distinguish chat, phrase panel and video. **Field / message** separate inputs and received bubbles. **Text / secondary / muted / placeholder** form the reading hierarchy. Thin translucent borders provide separation.
 
-The declared `--ground` is unused and is intentionally absent from the tokens. Existing error blocks and diagnostic chips retain inherited green/peach styles; they are outside the new palette's reusable primitives.
+**State clarity rule.** Color supplements a visible state label; it never supplies the whole explanation.
 
 ## Typography
 
-**Display and body stack:** Segoe UI, Arial, sans-serif. No font files ship. The inherited local stack begins with Inter, without bundling it.
+Onest is the display and body face, with system-ui and sans-serif fallbacks. JetBrains Mono is used for the room link. Material Symbols Rounded supplies interface icons. All three families load from Google Fonts in `web/index.html`; they are external dependencies, not bundled fonts.
 
-The frontmatter records actual implementation values, including the current system-font display. It is not a newly commissioned display identity.
+Landing display steps from 72px to 58px below 1200px, then 44px below 760px. Landing section headings step from 40px to 30px on phones. Call phrase text is 25px, grows to 30px at viewport heights of at least 800px, and is 23px on phones. Captions use 26px, 30px on tall desktop views, and 21px on phones. Body and control sizes vary by component, with quiet supporting labels at 13–15px.
 
-- **Display:** lobby introduction; mobile override is 2rem after the final cascade.
-- **Headline:** response workspace and drawer headings.
-- **Draft:** saved English phrase; mobile reduces to 1.625rem, preserving wrap.
-- **Body / label:** readable instructions and quieter metadata.
-- **Captions:** 1.375rem, line height 1.35; 1.125rem on phones. Interim speech is italic.
-
-**The Phrase Priority Rule.** Keep the saved draft larger than instructions and model details.
+**Phrase priority rule.** Saved phrase text is larger than its state and guidance; detailed scores stay subordinate.
 
 ## Layout
 
-The lobby and active call share a centered maximum width of 1600px. The lobby uses 24px 32px outer padding and two columns (1.15fr / .85fr). The active call uses 16px 24px padding, a flexible stage and a 350px response column separated by a border and 24px gap.
+Landing sections are centered at a maximum 1200px with 40px horizontal padding, reduced to 20px on phones. The hero uses an adaptive two-column grid and becomes one column as available width requires. Desktop hero padding is 80px 40px 104px; section padding is 96px 40px. Phone values are 44px 20px 64px and 56px 20px. The sticky header is 72px tall on desktop.
 
-At 1050px the response column becomes 310px with a 16px gap. At 760px the page padding becomes 12px, call content stacks, and the lobby puts entry controls before its illustrative conversation. The final phone video height is clamp(180px,23svh,240px); desktop uses clamp(280px,calc(100svh - 315px),760px).
+The call occupies the full window width. Desktop workspace gutters are 14px with 12px gaps, a flexible video/phrase/control column and a permanent chat column of 340px, increasing to 380px at widths of at least 1400px. The phrase panel is horizontal with wrapping actions under the video. Waiting retains this same call grid by explicit user choice.
 
-Remote video uses contain, preserving the complete frame. The mirrored self-preview and its landmarks share bounds and transform. The normal self-preview is at most 210px/25% on desktop and 120px/33% on phones; its expand control changes presentation.
+Below 760px, the call stacks with 10px horizontal gutters; video height is 86vw and chat height is 520px. Media controls form three columns with the end-call action across the full row. On desktop heights of 680px or less, the page scrolls rather than clipping content.
 
-Captions occupy their own band below video: up to three visible lines on desktop and two on phones, with keyboard-accessible scrolling. Controls and header navigation wrap; button text may wrap anywhere to preserve content at enlarged text sizes. Drawers occupy the right edge on desktop (480px, or 760px for help) and become a bottom sheet at 760px (92dvh, beginning at 8svh). Content remains scrollable.
+Remote video uses contain. Own video and landmarks share mirrored bounds. Own preview width is 200px, 232px at heights of at least 800px, and 104px on phones; maximum width constraints also apply. Expansion changes presentation without changing recognition coordinates or media tracks. Captions overlay the lower video in a translucent dark panel; long text wraps and scrolls after three lines. Help is a native modal dialog, up to 880px wide; on phones it becomes a bottom sheet up to 88dvh.
 
 ## Elevation & Depth
 
-Most surfaces are flat. Thin dividers, the dark video area and pale selector tray provide separation. The selected reply option alone uses the small shadow `0 2px 5px #17273b12`. Drawers use a translucent backdrop (`#101d3459`), not a floating-card shadow.
-
-**The Quiet Surface Rule.** Use borders and tonal areas to separate work; reserve the small shadow for the selected reply option.
+Tonal surfaces and translucent borders carry most separation. Own preview uses `0 8px 24px rgba(0,0,0,.35)`. Captions and participant labels have translucent dark backgrounds. Dialog backdrop is `rgba(4,9,10,.75)`. The sticky landing header uses a 10px backdrop blur. There is no general floating-card shadow system.
 
 ## Shapes
 
-Inputs and self-preview use modest rounded corners; buttons are slightly softer, and the stage forms the largest closed area. Reply selectors have a rounded shared tray. Phone drawers round only their top corners. The response workspace itself is an open region separated by a line, not a card.
+Controls use soft 12px corners, compact controls 8–10px, message bubbles 14px, feedback 16px and video/chat surfaces 18px. Dialogs use 20px corners and phone sheets round their upper edge. Own-camera preview is clipped with a translucent border. The landing mock conversation has a 22px outer radius, preserving the supplied composition.
 
 ## Components
 
-### Buttons
+### Buttons and fields
 
-Labelled and compact. Primary actions use cobalt, secondary actions white, and end-call uses warm danger tones. The base minimum height is 44px; phone navigation and selector controls use 40px, with smaller preview controls. Disabled controls retain readable color. Background transitions take 160ms ease-out and are removed for reduced motion. Keyboard focus uses a 3px cobalt outline with 3px offset.
+Primary buttons are mint with dark text; secondary controls use translucent outlines; end-call is red. Default minimum button height is 44px, draft actions 48px and media controls 52px. Hero actions are 56px. Focus uses a 3px mint outline with 2px offset. Disabled controls expose disabled semantics; the chat submit button has an explicit muted surface. Inputs use dark fill and a translucent border. Selected response segments use light fill and dark text.
 
-### Inputs / Fields
+### Feedback
 
-White fields use a thin line border, the field radius and 12px padding. Labels remain outside the field. Textareas can resize vertically. Focus follows the shared outline. Example selectors use the same shape with 10px padding.
+The same feedback panel presents measured tracking guidance, progress, uncertainty, a saved draft, command mode and exit confirmation. Ready is mint; uncertain is amber with a dashed border; errors use soft red. The phrase and its actions wrap together. Changes in layout do not change inference, command geometry, hold requirements or draft rules.
 
-### Navigation and reply selector
+### Video, captions and chat
 
-Header buttons open invitation, history and help panels. On phones the navigation takes its own full-width row. Gesture/voice selection uses aria-pressed with a white selected option, blue label and the small selected-state shadow. It changes the visible response tools.
+The remote stream is the primary visual area. Own-preview controls remain local to its inset. Captions sit over the remote video. Chat remains visible beside the stage on desktop; own bubbles align right with a mint tint, received bubbles left with a solid dark surface. Text input stays at the bottom of the chat panel.
 
-### Video stage and feedback
+### Entry, help and summary
 
-A dark, clipped container holds the remote feed with a compact own-camera inset. Participant names sit in small translucent labels. The saved draft appears before guidance; model assumptions remain smaller and are hidden when a draft exists. Send and retry remain paired, with detailed scores behind a disclosure. Camera toggling preserves the draft.
-
-### Drawers and history
-
-Native modal dialogs provide invitation, text history, help and diagnostics, with a sticky heading and explicit close button. Conversation entries use dividers rather than bubbles. Embedded examples display recorded landmark data on canvas; these are evidence aids, not decorative imagery or live recognition results.
+Create/join entry uses a native dialog and response-choice buttons. Help and diagnostics use native dialog behavior with a close control. The ended-call summary uses the same dark identity and conversation bubbles. The removed standalone camera page remains available only as a development test harness, not a product destination.
 
 ## Do's and Don'ts
 
 ### Do:
 
-- Do keep captions outside the video and preserve their scrollable full text.
-- Do show state with words as well as color.
-- Do keep draft confirmation and retry together.
-- Do preserve visible keyboard focus and reduced-motion behavior.
+- Do use the approved HTML export when resolving visual ambiguity.
+- Do retain full-width desktop call composition and the waiting call grid.
+- Do preserve live video/landmark alignment, command coordinates and visible focus.
+- Do distinguish demonstration imagery on the landing page from actual call state.
+- Do retain reduced-motion handling for call controls and scrolling.
 
 ### Don't:
 
-- Don't present fixture video artwork as a shipped brand asset.
-- Don't merge a tentative model prediction with the saved draft.
-- Don't import the legacy green cards into new conversation surfaces.
-- Don't describe the limited movement vocabulary as universal sign-language translation.
+- Don't restore the discarded pale background, cobalt actions or Segoe display system.
+- Don't replace live streams with the export's illustrative participant avatars.
+- Don't promote confidence scores into a guarantee of translation accuracy.
+- Don't describe the 11 conditional movement-to-phrase assignments as newly trained sign-language translation.
 
-Not canonized or repaired: the inherited green ended-call/local/example surfaces, standalone examples eyebrow, and system-font lobby display remain implementation boundaries or craft debt. They are recorded honestly, not promoted into new design rules. Screenshot faces and colored video backgrounds are synthetic test fixtures only.
+Review evidence: `.impeccable/review/comparison-{landing,call}-{1440,1920,390}.png`. These comparisons address visual fidelity; physical camera, speech and different-network reliability require separate manual verification.

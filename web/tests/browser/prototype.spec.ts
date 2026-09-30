@@ -32,22 +32,22 @@ test('real Chromium WASM matches Python Keras and features on 32 synthetic input
   expect(result.outputError).toBeLessThanOrEqual(1e-5);
   expect(result.argmaxMatches).toBe(result.count);
 });
-test('denied camera permission is actionable and creates no messages', async ({ page }) => {
+test('module integration: denied camera permission is actionable and creates no messages', async ({ page }) => {
   await page.addInitScript(() => { navigator.mediaDevices.getUserMedia = async () => { throw new DOMException('denied', 'NotAllowedError'); }; });
-  await page.goto('/?mode=local');
+  await page.goto('/tests/local.html');
   await page.getByRole('button', { name: 'Включить камеру' }).click();
   await expect(page.getByRole('alert')).toContainText('Разреши камеру');
   await expect(page.getByRole('button', { name: 'Подтвердить слово' })).toBeDisabled();
   await expect(page.getByRole('button', { name: 'Включить камеру' })).toBeEnabled();
 });
-test('mobile layout fits screen', async ({ page }) => {
+test('module integration: mobile layout fits screen', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto('/?mode=local');
+  await page.goto('/tests/local.html');
   await expect(page.getByText('How are you? — класс afternoon', { exact: true })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
   await page.screenshot({ path: 'test-results/mobile.png', fullPage: true });
 });
-test('real MediaPipe and model load with synthetic camera; stop releases tracks and restart works', async ({ baseURL }) => {
+test('module integration: real MediaPipe and model load with synthetic camera; stop releases tracks and restart works', async ({ baseURL }) => {
   const { chromium } = await import('@playwright/test');
   const cameraBrowser = await chromium.launch({ headless: true, args: ['--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream'] });
   const page = await cameraBrowser.newPage();
@@ -59,7 +59,7 @@ test('real MediaPipe and model load with synthetic camera; stop releases tracks 
     navigator.mediaDevices.getUserMedia = async c => { const s = await get(c); (window as any).__streams.push(s); return s; };
   });
   try {
-    await page.goto(`${baseURL}/?mode=local`);
+    await page.goto(`${baseURL}/tests/local.html`);
     for (let i = 0; i < 2; i++) {
       await page.getByRole('button', { name: 'Включить камеру' }).click();
       await expect(page.getByText('Руки не видны.', { exact: false })).toBeVisible({ timeout: 60000 });

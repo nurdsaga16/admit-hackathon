@@ -21,7 +21,7 @@ export function recognitionFeedback(input: FeedbackInput) {
     : mode === 'commands' ? (control.active ? 'Команды: удержание / нейтральное положение' : 'Вход в управление')
     : mode === 'disabled' ? 'Распознавание фраз выключено' : 'Распознавание фраз';
   const hint = mode === 'off' ? 'Включи камеру для распознавания.'
-    : mode === 'disabled' ? 'Удержи ладонь в рамке, чтобы включить общение, или нажми «Включить жесты».'
+    : mode === 'disabled' ? 'Удержи ладонь в рамке, чтобы включить общение, или нажми «Включить распознавание».'
     : mode === 'training' ? `${input.lesson} ${control.hint}`
     : mode === 'ending' ? `Слова приостановлены до решения о выходе. Сначала нейтральное положение 0,5 с. ${control.hint}`
     : mode === 'commands' ? `${control.hint} Слова приостановлены из-за области команд. Убери руку из рамки на 0,5 с для продолжения.`
@@ -32,7 +32,7 @@ export function recognitionFeedback(input: FeedbackInput) {
   const guidance = mode === 'words' && input.draft ? 'Отправь фразу или нажми «Повторить». Перед повтором убери руки из кадра на секунду.'
     : uncertain ? 'Пока не удалось уверенно различить движение. Убери руки на секунду и покажи его заново. Можно открыть пример.' : hint;
   return {
-    mode,title,hint,nextStep,guidance,
+    mode,title,hint,nextStep,guidance,stableCount:input.stableCount,stableRequired:input.stableRequired,
     draft:input.draft ? getPhrase(input.draft) : null,
     prediction:words && input.scores[0] && Number.isFinite(input.scores[0].score) ? {phrase:getPhrase(input.scores[0].word),score:input.scores[0].score} : null,
     stability:words ? `Совпало окон: ${input.stableCount} / ${input.stableRequired}` : null,

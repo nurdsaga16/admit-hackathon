@@ -27,38 +27,38 @@ test('module integration: call layout with distinct synthetic test participants 
       body+='\nexport function recognitionFeedback(input){return window.__feedbackFixture ?? actualRecognitionFeedback(input)}';
       await route.fulfill({response,body});
     });
-    await a.goto(baseURL!);await a.getByLabel('Твоё имя').fill('Alice');await a.getByRole('button',{name:'Начать звонок',exact:true}).last().click();
+    await a.goto(baseURL!);await a.evaluate(()=>document.fonts.ready); for(const [width,height] of [[1440,900],[1920,1080],[390,844]]){await a.setViewportSize({width,height});await a.evaluate(()=>scrollTo(0,0));await a.screenshot({path:`../.impeccable/review/application-landing-${width}.png`});}await a.getByRole('button',{name:'Начать звонок',exact:true}).first().click(); await a.getByLabel('Твоё имя').fill('Alice');await a.locator('.entry-submit').click();
     await expect(a.getByText('Ждём собеседника',{exact:true})).toBeVisible();
-    await a.getByRole('button',{name:'Пригласить',exact:true}).click();
-    await b.goto(await a.getByLabel('Ссылка комнаты').inputValue());
-    await a.getByRole('button',{name:'Закрыть',exact:true}).click();await b.getByLabel('Твоё имя').fill('Bob');await b.getByRole('button',{name:'Присоединиться к звонку',exact:true}).click();
+
+    for(const [width,height] of [[1440,900],[1920,1080],[390,844]]){await a.setViewportSize({width,height});await a.screenshot({path:`../.impeccable/review/application-waiting-${width}.png`});} await b.goto(await a.getByLabel('Ссылка комнаты').inputValue());
+    await b.getByLabel('Твоё имя').fill('Bob');await b.getByRole('button',{name:'Присоединиться к звонку',exact:true}).click();
     await expect(a.getByRole('status').filter({hasText:'Соединение установлено'})).toBeVisible();
     await expect.poll(()=>a.getByLabel('Видео собеседника',{exact:true}).evaluate((v:HTMLVideoElement)=>v.videoWidth)).toBeGreaterThan(0);
     // WebRTC may adapt remote resolution; capture source and recognition input stay 640x480.
     expect(await a.getByLabel('Твоё видео',{exact:true}).evaluate((v:HTMLVideoElement)=>v.videoWidth)).toBe(640);
     const identity=()=>a.evaluate(()=>({calls:(window as any).__cameraCalls,ids:[...document.querySelectorAll('video')].map(v=>(v.srcObject as MediaStream)?.getVideoTracks()[0]?.id)}));
-    const before=await identity();
+    const before=await identity();for(const [width,height] of [[1440,900],[1920,1080],[390,844]]){await a.setViewportSize({width,height});await a.evaluate(()=>scrollTo(0,0));await a.screenshot({path:`../.impeccable/review/application-call-${width}.png`});if(width===390)await a.screenshot({path:`../.impeccable/review/application-call-390-full.png`,fullPage:true});const chat=await a.locator('.call-chat').boundingBox();if(width>390){expect(chat!.width).toBe(380);expect(chat!.y+chat!.height).toBe(height-12);}}
     const panel=a.getByRole('region',{name:'Состояние распознавания фраз'});
     const states={
-      draft:{mode:'words',title:'Проверь и отправь',hint:'Отправь фразу или нажми «Повторить». Перед повтором убери руки из кадра на секунду.',draft:'One moment, please',prediction:{phrase:'Nice to meet you',score:.87},stability:'Совпало окон: 3 / 3',progress:{kind:'frames',value:35,max:35,label:'35 / 35 кадров'}},
+      draft:{stableCount:3,stableRequired:3,mode:'words',title:'Проверь и отправь',hint:'Отправь фразу или нажми «Повторить». Перед повтором убери руки из кадра на секунду.',draft:'One moment, please',prediction:{phrase:'Nice to meet you',score:.87},stability:'Совпало окон: 3 / 3',progress:{kind:'frames',value:35,max:35,label:'35 / 35 кадров'}},
       noHands:{mode:'words',title:'Покажи руку',hint:'Руки не видны. Покажи хотя бы одну руку целиком.',draft:null,prediction:null,stability:'Совпало окон: 0 / 3',progress:{kind:'frames',value:0,max:35,label:'0 / 35 кадров'}},
       uncertain:{mode:'words',title:'Попробуй ещё раз',hint:'Не удалось различить движение. Убери руки на секунду и повтори.',draft:null,prediction:{phrase:'Hello',score:.76},stability:'Совпало окон: 0 / 3',progress:{kind:'frames',value:35,max:35,label:'35 / 35 кадров'}},
       error:{mode:'error',title:'Ошибка распознавания',hint:'Кадры не поступают. Проверь камеру и вернись во вкладку.',draft:null,prediction:null,stability:null,progress:null},
       commands:{mode:'commands',title:'Вход в управление',hint:'Удерживай ладонь ещё 0,4 с. Слова приостановлены из-за области команд.',draft:null,prediction:null,stability:null,progress:{kind:'command',value:.5,max:1,label:'Вход в область команд'}},
     };
-    for(const [width,height] of [[1366,768],[1440,900],[390,844]]){
+    for(const [width,height] of [[1440,900],[1920,1080],[390,844]]){
       await a.setViewportSize({width,height});await a.evaluate(()=>scrollTo(0,0));
       for(const [name,state] of Object.entries(states)){
         await a.evaluate(state=>{(window as any).__feedbackFixture=state;},state);
         await expect(panel).toHaveAttribute('data-mode',state.mode);
         await a.screenshot({path:`../.impeccable/review/layout-${width}-${name}.png`});
         const own=await a.locator('.self-viewport').boundingBox(),remote=await a.locator('.remote-viewport').boundingBox(),feedback=await panel.boundingBox();
-        expect(own!.width).toBeLessThanOrEqual(width===390?130:220);
-        if(width>390)expect(own!.width).toBeLessThanOrEqual(remote!.width*.25+1);
+        expect(own!.width).toBeLessThanOrEqual(width===390?104:232);
+        if(width>390)expect(own!.width).toBeLessThanOrEqual(remote!.width*.30+1);
         if(width===390)expect(feedback!.y).toBeGreaterThanOrEqual(remote!.y+remote!.height);
-        else expect(feedback!.x).toBeGreaterThanOrEqual(remote!.x+remote!.width);
-        expect(feedback!.y+feedback!.height).toBeLessThanOrEqual(height);
-        const controls=await a.locator('.call-controls').boundingBox();expect(controls!.y+controls!.height).toBeLessThanOrEqual(height);
+        else expect(feedback!.y).toBeGreaterThanOrEqual(remote!.y+remote!.height);
+        if(width>390)expect(feedback!.y+feedback!.height).toBeLessThanOrEqual(height);
+        const controls=await a.locator('.call-controls').boundingBox();if(width>390)expect(controls!.y+controls!.height).toBeLessThanOrEqual(height);
         expect(await a.getByLabel('Видео собеседника',{exact:true}).evaluate(v=>getComputedStyle(v).objectFit)).toBe('contain');
         expect(await a.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
         await a.screenshot({path:`../.impeccable/review/layout-${width}-${name}.png`});
@@ -76,19 +76,19 @@ test('module integration: call layout with distinct synthetic test participants 
       expect(alignment.same).toBe(true);expect(alignment.video).toBe(alignment.canvas);
       await a.getByRole('button',{name:'Уменьшить превью',exact:true}).click();expect(await identity()).toEqual(before);
     }
-    await b.getByRole('button',{name:'Написать сообщение',exact:true}).click();
+
     await b.getByLabel('Написать или исправить сообщение').fill('This is a longer caption from Bob. Please give me one moment while I explain the next part of our conversation. '.repeat(3));
     await b.getByRole('button',{name:'Отправить текст',exact:true}).click();
-    await b.getByRole('button',{name:'Закрыть',exact:true}).click();
+
     await expect(a.locator('.subtitles p')).toContainText('This is a longer caption from Bob.');
-    for(const [width,height] of [[1366,768],[1440,900],[390,844]]){
+    for(const [width,height] of [[1440,900],[1920,1080],[390,844]]){
       await a.setViewportSize({width,height});await a.evaluate(state=>{(window as any).__feedbackFixture=state;scrollTo(0,0);},states.draft);
       await expect(panel).toHaveAttribute('data-mode','words');
       await a.screenshot({path:`../.impeccable/review/layout-${width}-long-caption.png`});
       const sub=await a.locator('.subtitles').boundingBox(),remote=await a.locator('.remote-viewport').boundingBox();
-      expect(sub!.y).toBeGreaterThanOrEqual(remote!.y+remote!.height);
-      expect((await panel.boundingBox())!.y+(await panel.boundingBox())!.height).toBeLessThanOrEqual(height);
-      const controls=await a.locator('.call-controls').boundingBox();expect(controls!.y+controls!.height).toBeLessThanOrEqual(height);
+      expect(sub!.y).toBeGreaterThanOrEqual(remote!.y);expect(sub!.y+sub!.height).toBeLessThanOrEqual(remote!.y+remote!.height);
+      if(width>390)expect((await panel.boundingBox())!.y+(await panel.boundingBox())!.height).toBeLessThanOrEqual(height);
+      const controls=await a.locator('.call-controls').boundingBox();if(width>390)expect(controls!.y+controls!.height).toBeLessThanOrEqual(height);
     }
     // Blue is the remote Bob stream, orange is Alice's own preview.
     const pixels=await a.evaluate(()=>[...document.querySelectorAll('video')].map(v=>{const c=document.createElement('canvas');c.width=640;c.height=480;const ctx=c.getContext('2d')!;ctx.drawImage(v,0,0);return [...ctx.getImageData(10,10,1,1).data];}));
