@@ -1,6 +1,8 @@
 import { FilesetResolver, HandLandmarker, PoseLandmarker, DrawingUtils } from '@mediapipe/tasks-vision';
-import { type Frame, tips, joints } from './core';
+import { type Frame, type Point, tips, joints } from './core';
 export class Tracker {
+  // Separate command input. Never substitute these points into the word model.
+  fullHands: Point[][] = [];
   private constructor(readonly hands: HandLandmarker, readonly pose: PoseLandmarker) {}
   static async load() {
     const base = import.meta.env.BASE_URL;
@@ -23,6 +25,7 @@ export class Tracker {
     const ctx = canvas.getContext('2d')!;
     ctx.drawImage(video, 0, 0);
     const hands = this.hands.detectForVideo(canvas, now).landmarks;
+    this.fullHands = hands;
     const pose = this.pose.detectForVideo(canvas, now).landmarks[0] ?? [];
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     const drawing = new DrawingUtils(ctx);

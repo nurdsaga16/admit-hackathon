@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import LocalRecognition from './LocalRecognition';
 import CallPage from './CallPage';
+import DatasetExamples from './DatasetExamples';
 
 export default function App() {
   const params = new URLSearchParams(location.search);
@@ -9,6 +10,7 @@ export default function App() {
   const [link, setLink] = useState(params.get('room') ?? '');
   const [busy, setBusy] = useState(false), [error, setError] = useState('');
   if (params.get('mode') === 'local') return <LocalRecognition/>;
+  if (params.get('mode') === 'examples') return <DatasetExamples/>;
   if (call) return <CallPage roomId={call.roomId} name={call.name} onHome={() => { history.replaceState(null, '', location.pathname); setCall(null); setLink(''); }}/ >;
   function enter(roomId: string) {
     if (!/^[a-f0-9]{32}$/.test(roomId)) { setError('Вставь полную ссылку комнаты или её код.'); return; }
@@ -41,6 +43,6 @@ export default function App() {
       {error && <p className="error" role="alert">{error}</p>}
       <p>Камера запрашивается при входе. Микрофон и распознавание речи включаются отдельно.</p>
     </section><section className="home-notes"><h2>Один разговор — два способа ответить</h2><ol><li>Создай комнату и отправь ссылку собеседнику.</li><li>Покажи поддерживаемый жест, проверь слово и подтверди отправку.</li><li>Включи микрофон и английские субтитры, чтобы ответить голосом.</li></ol><p>Прототип знает 11 классов исходной модели. Hello, How are you? и I’m fine ещё не обучены.</p><p>Видео и история не записываются на сервер. Распознавание речи может передавать звук сервису браузера.</p></section></div>
-    <footer>SignBridge · разговор без установки приложения</footer>
+    <footer><a href="?mode=examples">Примеры движений из датасета</a><p>SignBridge · разговор без установки приложения</p></footer>
   </main>;
 }

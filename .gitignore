@@ -22,3 +22,6 @@ server/node_modules/
 server/.env
 *.pem
 *.key
+data-local/
+web/public/dataset-examples/
+/test-results/
